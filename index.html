@@ -38,21 +38,13 @@
             </div>
             <nav>
                 <ul>
-                    <li class="active">
+                    <li class="active" onclick="showPage('overview-page')">
                         <i data-lucide="layout-dashboard"></i>
                         <span>Dashboard</span>
                     </li>
-                    <li>
+                    <li onclick="showPage('players-page')">
                         <i data-lucide="users"></i>
                         <span>Jogadores</span>
-                    </li>
-                    <li>
-                        <i data-lucide="gamepad-2"></i>
-                        <span>Sessões</span>
-                    </li>
-                    <li>
-                        <i data-lucide="settings"></i>
-                        <span>Configurações</span>
                     </li>
                     <li id="logout-btn" style="margin-top: 50px; color: #ff4444;">
                         <i data-lucide="log-out"></i>
@@ -63,53 +55,88 @@
         </aside>
 
         <main>
-            <header>
-                <div class="title-area">
-                    <h1>Overview</h1>
-                    <p>Estatísticas do Firestore em tempo real</p>
-                </div>
-                <div id="auth-status" class="badge">Conectado ao Cloud</div>
-            </header>
+            <!-- SEÇÃO: OVERVIEW -->
+            <div id="overview-page" class="admin-page">
+                <header>
+                    <div class="title-area">
+                        <h1>Overview</h1>
+                        <p>Estatísticas do Firestore em tempo real</p>
+                    </div>
+                    <div id="auth-status" class="badge">Conectado ao Cloud</div>
+                </header>
 
-            <section class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Total de Jogadores</div>
-                    <div id="total-users" class="stat-value primary">--</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Partidas Jogadas</div>
-                    <div id="total-games" class="stat-value accent">--</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Maior Pontuação</div>
-                    <div id="global-high-score" class="stat-value">--</div>
-                </div>
-            </section>
+                <section class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total de Jogadores</div>
+                        <div id="total-users" class="stat-value primary">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Partidas Jogadas</div>
+                        <div id="total-games" class="stat-value accent">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Maior Pontuação</div>
+                        <div id="global-high-score" class="stat-value">--</div>
+                    </div>
+                </section>
 
-            <section class="content-card">
-                <div class="content-header">
-                    <h2>Top 10 Jogadores</h2>
-                    <button id="refresh-btn"
-                        style="background: none; border: none; color: var(--primary-color); cursor: pointer;">
-                        <i data-lucide="refresh-cw" size="18"></i>
-                    </button>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Posição</th>
-                            <th>Nick / Jogador</th>
-                            <th>E-mail</th>
-                            <th>High Score</th>
-                            <th>Jogos Totais</th>
-                        </tr>
-                    </thead>
-                    <tbody id="user-table-body">
-                        <!-- Gerado via JavaScript -->
-                    </tbody>
-                </table>
-            </section>
-        </main>
+                <section class="content-card">
+                    <div class="content-header">
+                        <h2>Top 10 Jogadores</h2>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Posição</th>
+                                <th>Nick / Jogador</th>
+                                <th>E-mail</th>
+                                <th>High Score</th>
+                                <th>Jogos Totais</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body">
+                            <!-- Gerado via JavaScript -->
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+
+            <!-- SEÇÃO: JOGADORES (DETALHADO) -->
+            <div id="players-page" class="admin-page" style="display:none;">
+                <header>
+                    <div class="title-area">
+                        <h1>Base de Jogadores</h1>
+                        <p>Todos os dados cadastrados no Firestore</p>
+                    </div>
+                </header>
+
+                <section class="content-card">
+                    <div class="content-header">
+                        <h2>Lista Detalhada</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="min-width: 1000px;">
+                            <thead>
+                                <tr>
+                                    <th>Nick</th>
+                                    <th>E-mail Oficial</th>
+                                    <th>Nascimento</th>
+                                    <th>Criado em</th>
+                                    <th>Total de Pontos</th>
+                                    <th>High Score</th>
+                                    <th>Jogos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="full-players-table-body">
+                                <!-- Gerado via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+    </div>
+    </main>
     </div>
 
     <!-- Firebase SDKs -->
@@ -169,6 +196,22 @@
             }
         });
 
+        // --- SISTEMA DE NAVEGAÇÃO ---
+        window.showPage = function (pageId) {
+            // Esconder todas as paginas
+            document.querySelectorAll('.admin-page').forEach(p => p.style.display = 'none');
+            // Remover 'active' de todos os itens do menu
+            document.querySelectorAll('nav li').forEach(li => li.classList.remove('active'));
+
+            // Mostrar a pagina correta
+            document.getElementById(pageId).style.display = 'block';
+
+            // Adicionar active ao item clicado (via linkagem de texto lateral)
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+
         document.getElementById('logout-btn').addEventListener('click', () => {
             location.reload();
         });
@@ -176,14 +219,38 @@
         // --- SINCRONIZAÇÃO EM TEMPO REAL ---
         function startFirestoreSync() {
             const userTableBody = document.getElementById('user-table-body');
+            const fullPlayersTableBody = document.getElementById('full-players-table-body');
             const totalUsersEl = document.getElementById('total-users');
             const totalGamesEl = document.getElementById('total-games');
             const globalHighScoreEl = document.getElementById('global-high-score');
 
-            // Query otimizada para o ranking
-            const q = query(collection(db, "users"), orderBy("highScore", "desc"), limit(10));
+            // Listen em toda a coleção para a pagina de Jogadores
+            const qAll = query(collection(db, "users"), orderBy("nickname", "asc"));
+            onSnapshot(qAll, (snapshot) => {
+                fullPlayersTableBody.innerHTML = "";
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const tr = document.createElement('tr');
 
-            onSnapshot(q, (snapshot) => {
+                    const birthDate = data.birthDate ? new Date(data.birthDate.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A';
+                    const createdAt = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A';
+
+                    tr.innerHTML = `
+                        <td class="nickname">${data.nickname || 'Anônimo'}</td>
+                        <td style="color: var(--text-dim)">${data.email}</td>
+                        <td>${birthDate}</td>
+                        <td>${createdAt}</td>
+                        <td style="color: var(--accent-color)">${(data.totalScore || 0).toLocaleString()}</td>
+                        <td style="font-weight: bold">${(data.highScore || 0).toLocaleString()}</td>
+                        <td><span class="badge">${data.totalGames || 0}</span></td>
+                    `;
+                    fullPlayersTableBody.appendChild(tr);
+                });
+            });
+
+            // Query otimizada para o ranking (Overview)
+            const qTop = query(collection(db, "users"), orderBy("highScore", "desc"), limit(10));
+            onSnapshot(qTop, (snapshot) => {
                 userTableBody.innerHTML = "";
                 let totalGamesSum = 0;
                 let maxScore = 0;
@@ -211,7 +278,7 @@
                 globalHighScoreEl.innerText = maxScore.toLocaleString();
             }, (error) => {
                 console.error("Erro no Firestore:", error);
-                userTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ff4444;">Erro de Permissão: Verifique se o Firestore está em 'Modo de Teste'.</td></tr>`;
+                userTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ff4444;">Erro de Permissão.</td></tr>`;
             });
         }
 
