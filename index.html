@@ -38,13 +38,9 @@
             </div>
             <nav>
                 <ul>
-                    <li class="active" onclick="showPage('overview-page')">
+                    <li class="active">
                         <i data-lucide="layout-dashboard"></i>
                         <span>Dashboard</span>
-                    </li>
-                    <li onclick="showPage('players-page')">
-                        <i data-lucide="users"></i>
-                        <span>Jogadores</span>
                     </li>
                     <li id="logout-btn" style="margin-top: 50px; color: #ff4444;">
                         <i data-lucide="log-out"></i>
@@ -55,16 +51,16 @@
         </aside>
 
         <main>
-            <!-- SEÇÃO: OVERVIEW -->
-            <div id="overview-page" class="admin-page">
+            <div id="dashboard-page" class="admin-page">
                 <header>
                     <div class="title-area">
-                        <h1>Overview</h1>
-                        <p>Estatísticas do Firestore em tempo real</p>
+                        <h1>Dashboard</h1>
+                        <p>Controle total da base de dados Firestore</p>
                     </div>
                     <div id="auth-status" class="badge">Conectado ao Cloud</div>
                 </header>
 
+                <!-- Resumo Geral -->
                 <section class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Total de Jogadores</div>
@@ -80,39 +76,10 @@
                     </div>
                 </section>
 
+                <!-- Detalhes dos Jogadores -->
                 <section class="content-card">
                     <div class="content-header">
-                        <h2>Top 10 Jogadores</h2>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Posição</th>
-                                <th>Nick / Jogador</th>
-                                <th>E-mail</th>
-                                <th>High Score</th>
-                                <th>Jogos Totais</th>
-                            </tr>
-                        </thead>
-                        <tbody id="user-table-body">
-                            <!-- Gerado via JavaScript -->
-                        </tbody>
-                    </table>
-                </section>
-            </div>
-
-            <!-- SEÇÃO: JOGADORES (DETALHADO) -->
-            <div id="players-page" class="admin-page" style="display:none;">
-                <header>
-                    <div class="title-area">
-                        <h1>Base de Jogadores</h1>
-                        <p>Todos os dados cadastrados no Firestore</p>
-                    </div>
-                </header>
-
-                <section class="content-card">
-                    <div class="content-header">
-                        <h2>Lista Detalhada</h2>
+                        <h2>Lista Detalhada de Jogadores</h2>
                     </div>
                     <div style="overflow-x: auto;">
                         <table style="min-width: 1000px;">
@@ -129,20 +96,22 @@
                             </thead>
                             <tbody id="full-players-table-body">
                                 <!-- Gerado via JavaScript -->
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-dim);">Conectando ao
+                                        Firestore...</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </section>
             </div>
-
-    </div>
-    </main>
+        </main>
     </div>
 
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // CONFIGURAÇÃO REAL
         const firebaseConfig = {
@@ -164,8 +133,6 @@
         const mainWrapper = document.getElementById('main-wrapper');
         const loginError = document.getElementById('login-error');
 
-        // Hash da senha "admin123" (SHA-256)
-        // Para trocar a senha: gere um novo hash SHA-256 e substitua abaixo
         const ADMIN_HASH = "648dd6f90816b359d1d09d7734ba73bc0d172b4274c9254355ca3224f9f947a7";
 
         async function hashPassword(string) {
@@ -177,7 +144,6 @@
 
         loginBtn.addEventListener('click', async () => {
             const inputHash = await hashPassword(adminPassInput.value);
-
             if (inputHash === ADMIN_HASH) {
                 loginOverlay.style.display = "none";
                 mainWrapper.style.display = "flex";
@@ -189,48 +155,33 @@
             }
         });
 
-        // Suporte à tecla ENTER
         adminPassInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loginBtn.click();
-            }
+            if (e.key === 'Enter') loginBtn.click();
         });
 
-        // --- SISTEMA DE NAVEGAÇÃO ---
-        window.showPage = function (pageId) {
-            // Esconder todas as paginas
-            document.querySelectorAll('.admin-page').forEach(p => p.style.display = 'none');
-            // Remover 'active' de todos os itens do menu
-            document.querySelectorAll('nav li').forEach(li => li.classList.remove('active'));
-
-            // Mostrar a pagina correta
-            document.getElementById(pageId).style.display = 'block';
-
-            // Adicionar active ao item clicado (via linkagem de texto lateral)
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            }
-        }
-
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            location.reload();
-        });
+        document.getElementById('logout-btn').addEventListener('click', () => location.reload());
 
         // --- SINCRONIZAÇÃO EM TEMPO REAL ---
         function startFirestoreSync() {
-            const userTableBody = document.getElementById('user-table-body');
             const fullPlayersTableBody = document.getElementById('full-players-table-body');
             const totalUsersEl = document.getElementById('total-users');
             const totalGamesEl = document.getElementById('total-games');
             const globalHighScoreEl = document.getElementById('global-high-score');
 
-            // Listen em toda a coleção para a pagina de Jogadores
-            const qAll = query(collection(db, "users"), orderBy("nickname", "asc"));
-            onSnapshot(qAll, (snapshot) => {
+            // Listen em toda a coleção users
+            const q = query(collection(db, "users"), orderBy("nickname", "asc"));
+
+            onSnapshot(q, (snapshot) => {
                 fullPlayersTableBody.innerHTML = "";
+                let totalGamesSum = 0;
+                let maxScore = 0;
+
                 snapshot.forEach((doc) => {
                     const data = doc.data();
                     const tr = document.createElement('tr');
+
+                    totalGamesSum += (data.totalGames || 0);
+                    if (data.highScore > maxScore) maxScore = data.highScore;
 
                     const birthDate = data.birthDate ? new Date(data.birthDate.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A';
                     const createdAt = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A';
@@ -246,43 +197,16 @@
                     `;
                     fullPlayersTableBody.appendChild(tr);
                 });
-            });
-
-            // Query otimizada para o ranking (Overview)
-            const qTop = query(collection(db, "users"), orderBy("highScore", "desc"), limit(10));
-            onSnapshot(qTop, (snapshot) => {
-                userTableBody.innerHTML = "";
-                let totalGamesSum = 0;
-                let maxScore = 0;
-                let counter = 1;
-
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const tr = document.createElement('tr');
-
-                    totalGamesSum += (data.totalGames || 0);
-                    if (data.highScore > maxScore) maxScore = data.highScore;
-
-                    tr.innerHTML = `
-                        <td>${counter++}</td>
-                        <td class="nickname">${data.nickname || 'Anônimo'}</td>
-                        <td style="color: var(--text-dim)">${data.email}</td>
-                        <td style="font-weight: bold">${(data.highScore || 0).toLocaleString()}</td>
-                        <td><span class="badge">${data.totalGames || 0}</span></td>
-                    `;
-                    userTableBody.appendChild(tr);
-                });
 
                 totalUsersEl.innerText = snapshot.size;
                 totalGamesEl.innerText = totalGamesSum;
                 globalHighScoreEl.innerText = maxScore.toLocaleString();
             }, (error) => {
                 console.error("Erro no Firestore:", error);
-                userTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ff4444;">Erro de Permissão.</td></tr>`;
+                fullPlayersTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ff4444;">Erro de Permissão. Verifique o Firestore.</td></tr>`;
             });
         }
 
-        // Inicializar ícones da Lucide
         lucide.createIcons();
     </script>
 </body>
