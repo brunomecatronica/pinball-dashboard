@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X Pinball | Admin Dashboard</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Oxanium:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Style -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <!-- Login Barrier -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <img src="assets/logo.svg" height="80" alt="Logo">
+            <h2>ADMIN ACCESS</h2>
+            <input type="password" id="admin-pass" placeholder="Enter Admin Password">
+            <button id="login-btn">ENTER SYSTEM</button>
+            <p id="login-error" style="color: #ff4444; font-size: 0.8rem; margin-top: 15px; display: none;">Senha
+                incorreta. Tente novamente.</p>
+        </div>
+    </div>
+
+    <div id="main-wrapper">
+        <aside>
+            <div class="logo-container">
+                <img src="assets/logo.svg" alt="Pinball Logo" class="logo-img">
+                <span class="logo-text">X PINBALL</span>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </li>
+                    <li id="logout-btn" style="margin-top: 50px; color: #ff4444;">
+                        <i data-lucide="log-out"></i>
+                        <span>Sair</span>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main>
+            <div id="dashboard-page" class="admin-page">
+                <header>
+                    <div class="title-area">
+                        <h1>Dashboard</h1>
+                        <p>Controle total da base de dados Firestore</p>
+                    </div>
+                    <div id="auth-status" class="badge">Conectado ao Cloud</div>
+                </header>
+
+                <!-- Resumo Geral -->
+                <section class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total de Jogadores</div>
+                        <div id="total-users" class="stat-value primary">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Partidas Jogadas</div>
+                        <div id="total-games" class="stat-value accent">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Maior Pontuação</div>
+                        <div id="global-high-score" class="stat-value">--</div>
+                    </div>
+                </section>
+
+                <!-- Detalhes dos Jogadores -->
+                <section class="content-card">
+                    <div class="content-header">
+                        <h2>Lista Detalhada de Jogadores</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="min-width: 1000px;">
+                            <thead>
+                                <tr>
+                                    <th>Nick</th>
+                                    <th>E-mail Oficial</th>
+                                    <th>Nascimento</th>
+                                    <th>Criado em</th>
+                                    <th>Total de Pontos</th>
+                                    <th>High Score</th>
+                                    <th>Jogos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="full-players-table-body">
+                                <!-- Gerado via JavaScript -->
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-dim);">Conectando ao
+                                        Firestore...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // CONFIGURAÇÃO REAL
+        const firebaseConfig = {
+            apiKey: "AIzaSyBHyIkD2uImYxUWHE4cAXAfia-eoibGt0A",
+            authDomain: "pinball-constructor.firebaseapp.com",
+            projectId: "pinball-constructor",
+            storageBucket: "pinball-constructor.firebasestorage.app",
+            messagingSenderId: "831632117862",
+            appId: "1:831632117862:web:51bc47de5184a975b09da7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- SISTEMA DE LOGIN E SEGURANÇA ---
+        const loginBtn = document.getElementById('login-btn');
+        const adminPassInput = document.getElementById('admin-pass');
+        const loginOverlay = document.getElementById('login-overlay');
+        const mainWrapper = document.getElementById('main-wrapper');
+        const loginError = document.getElementById('login-error');
+
+        const ADMIN_HASH = "648dd6f90816b359d1d09d7734ba73bc0d172b4274c9254355ca3224f9f947a7";
+
+        async function hashPassword(string) {
+            const utf8 = new TextEncoder().encode(string);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        loginBtn.addEventListener('click', async () => {
+            const inputHash = await hashPassword(adminPassInput.value);
+            if (inputHash === ADMIN_HASH) {
+                loginOverlay.style.display = "none";
+                mainWrapper.style.display = "flex";
+                startFirestoreSync();
+            } else {
+                loginError.style.display = "block";
+                adminPassInput.style.borderColor = "#ff4444";
+                adminPassInput.value = "";
+            }
+        });
+
+        adminPassInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => location.reload());
+
+        // --- SINCRONIZAÇÃO EM TEMPO REAL ---
+        function startFirestoreSync() {
+            const fullPlayersTableBody = document.getElementById('full-players-table-body');
+            const totalUsersEl = document.getElementById('total-users');
+            const totalGamesEl = document.getElementById('total-games');
+            const globalHighScoreEl = document.getElementById('global-high-score');
+
+            // Listen em toda a coleção users
+            const q = query(collection(db, "users"), orderBy("nickname", "asc"));
+
+            onSnapshot(q, (snapshot) => {
+                fullPlayersTableBody.innerHTML = "";
+                let totalGamesSum = 0;
+                let maxScore = 0;
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const tr = document.createElement('tr');
+
+                    totalGamesSum += (data.totalGames || 0);
+                    if (data.highScore > maxScore) maxScore = data.highScore;
+
+                    const birthDate = data.birthDate ? new Date(data.birthDate.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A';
+                    const createdAt = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A';
+
+                    tr.innerHTML = `
+                        <td class="nickname">${data.nickname || 'Anônimo'}</td>
+                        <td style="color: var(--text-dim)">${data.email}</td>
+                        <td>${birthDate}</td>
+                        <td>${createdAt}</td>
+                        <td style="color: var(--accent-color)">${(data.totalScore || 0).toLocaleString()}</td>
+                        <td style="font-weight: bold">${(data.highScore || 0).toLocaleString()}</td>
+                        <td><span class="badge">${data.totalGames || 0}</span></td>
+                    `;
+                    fullPlayersTableBody.appendChild(tr);
+                });
+
+                totalUsersEl.innerText = snapshot.size;
+                totalGamesEl.innerText = totalGamesSum;
+                globalHighScoreEl.innerText = maxScore.toLocaleString();
+            }, (error) => {
+                console.error("Erro no Firestore:", error);
+                fullPlayersTableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ff4444;">Erro de Permissão. Verifique o Firestore.</td></tr>`;
+            });
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

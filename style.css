@@ -1,12 +1,22 @@
 :root {
-    --bg-color: #05070a;
-    --card-bg: rgba(15, 18, 25, 0.8);
-    --primary-color: #0088ff;
-    --accent-color: #ffaa00;
+    --bg-color: #00401F;
+    /* Verde Oficial */
+    --card-bg: rgba(0, 20, 10, 0.6);
+    --primary-color: #00ff73;
+    /* Neon Green */
+    --accent-color: #00ff73;
     --text-main: #ffffff;
-    --text-dim: #8a8d91;
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    --text-dim: #b0c4b8;
+    --glass-border: rgba(0, 255, 115, 0.1);
+    --box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+h1,
+h2,
+h3,
+.logo-text,
+.stat-value {
+    font-family: 'Oxanium', display;
 }
 
 * {
@@ -19,8 +29,8 @@
 body {
     background-color: var(--bg-color);
     background-image:
-        radial-gradient(circle at 10% 20%, rgba(0, 136, 255, 0.05) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(255, 170, 0, 0.05) 0%, transparent 40%);
+        radial-gradient(circle at 10% 20%, rgba(0, 255, 115, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 255, 115, 0.05) 0%, transparent 40%);
     color: var(--text-main);
     min-height: 100vh;
     display: flex;
@@ -75,7 +85,7 @@ nav li {
 
 nav li:hover,
 nav li.active {
-    background: rgba(0, 136, 255, 0.1);
+    background: rgba(0, 255, 115, 0.1);
     color: var(--text-main);
 }
 
@@ -193,7 +203,7 @@ tr:hover td {
     padding: 5px 12px;
     border-radius: 20px;
     font-size: 0.8rem;
-    background: rgba(255, 170, 0, 0.1);
+    background: rgba(0, 255, 115, 0.1);
     color: var(--accent-color);
 }
 
@@ -237,7 +247,7 @@ tr:hover td {
     text-align: center;
     width: 100%;
     max-width: 400px;
-    box-shadow: 0 0 50px rgba(0, 136, 255, 0.1);
+    box-shadow: 0 0 50px rgba(0, 255, 115, 0.1);
 }
 
 .login-box h2 {
@@ -261,7 +271,7 @@ tr:hover td {
 
 .login-box input:focus {
     border-color: var(--primary-color);
-    background: rgba(0, 136, 255, 0.05);
+    background: rgba(0, 255, 115, 0.05);
 }
 
 .login-box button {
@@ -278,7 +288,7 @@ tr:hover td {
 
 .login-box button:hover {
     filter: brightness(1.2);
-    box-shadow: 0 0 20px rgba(0, 136, 255, 0.4);
+    box-shadow: 0 0 20px rgba(0, 255, 115, 0.4);
 }
 
 #main-wrapper {
