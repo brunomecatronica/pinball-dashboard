@@ -50,14 +50,14 @@ aside {
 
 .logo-container {
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
 }
 
 .logo-img {
-    height: 40px;
-    filter: drop-shadow(0 0 10px var(--primary-color));
+    height: 160px;
+    filter: drop-shadow(0 0 20px var(--primary-color));
 }
 
 .logo-text {
