@@ -231,6 +231,10 @@
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .card:hover {
@@ -240,10 +244,27 @@
             background-color: rgba(0, 60, 30, 0.6);
         }
 
-        .card i {
-            color: var(--accent-color);
+        .icon-box {
+            width: 72px;
+            height: 72px;
+            background: rgba(0, 255, 115, 0.07);
+            border: 1px solid rgba(0, 255, 115, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 25px;
-            filter: drop-shadow(0 0 8px rgba(0, 255, 115, 0.5));
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: var(--accent-color);
+            box-shadow: 0 0 20px rgba(0, 255, 115, 0.05);
+        }
+
+        .card:hover .icon-box {
+            background: var(--accent-color);
+            color: #000;
+            transform: scale(1.1) rotate(8deg);
+            box-shadow: 0 0 30px rgba(0, 255, 115, 0.4);
+            border-color: var(--accent-color);
         }
 
         .card h3 {
@@ -420,19 +441,25 @@
         </div>
         <div class="grid">
             <div class="card">
-                <i data-lucide="palette" size="32"></i>
+                <div class="icon-box">
+                    <i data-lucide="palette" size="32"></i>
+                </div>
                 <h3>Identidade 100% Adaptável</h3>
                 <p>Personalize cores, logos, background e sons. O jogo se veste com a sua marca, criando uma experiência
                     imersiva e proprietária.</p>
             </div>
             <div class="card">
-                <i data-lucide="trophy" size="32"></i>
+                <div class="icon-box">
+                    <i data-lucide="trophy" size="32"></i>
+                </div>
                 <h3>Competitividade Viral</h3>
                 <p>Rankings em tempo real projetados em telões criam o ambiente perfeito para ativações em eventos
                     presenciais.</p>
             </div>
             <div class="card">
-                <i data-lucide="smartphone" size="32"></i>
+                <div class="icon-box">
+                    <i data-lucide="smartphone" size="32"></i>
+                </div>
                 <h3>Multiplataforma</h3>
                 <p>Roda em qualquer dispositivo móvel (Android/iOS) ou Web. Sem barreiras de entrada para o seu usuário.
                 </p>
